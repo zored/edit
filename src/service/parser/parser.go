@@ -19,7 +19,7 @@ type (
 	parser struct{}
 )
 
-func newParser() *parser {
+func NewParser() *parser {
 	return &parser{}
 }
 
@@ -77,13 +77,13 @@ func (p *parser) getWrapperStart(linesTillCursor []string, cursor *navigation.Po
 }
 
 func (p *parser) getWrapperEnd(linesTillCursor []string, startPosition *navigation.Position, wrapper *tokens.AtomWrapper, separator_ tokens.Separator, file *bufio.Scanner) (*navigation.Position, *tokens.Tokens, error) {
-	result := navigation.NewPosition(startPosition.Line, badColumn)
+	result := navigation.NewPosition(startPosition.Line, startPosition.Column)
 
 	lines := linesTillCursor[startPosition.LineIndex():]
 	lines[0] = lines[0][startPosition.ColumnIndex():]
 
-	start := runes.NewRunesMatcher(wrapper.Start, false)
-	end := runes.NewRunesMatcher(wrapper.End, false)
+	startMatcher := runes.NewRunesMatcher(wrapper.Start, false)
+	endMatcher := runes.NewRunesMatcher(wrapper.End, false)
 	depth := 0
 	done := false
 
@@ -91,9 +91,11 @@ func (p *parser) getWrapperEnd(linesTillCursor []string, startPosition *navigati
 	tokens_ := tokens.NewTokens(wrapper, separator_, false)
 	for allLines.Scan() {
 		line := allLines.Text()
-		depth, result.Column, done = p.parseLine(line, depth, start, end, tokens_)
+		var runeIndex int
+		depth, runeIndex, done = p.parseLine(line, depth, startMatcher, endMatcher, tokens_)
 		if done {
-			break
+			result.Column = runeIndex + startPosition.Column + 1
+			return result, tokens_, nil
 		}
 		result.Line++
 	}
@@ -101,17 +103,13 @@ func (p *parser) getWrapperEnd(linesTillCursor []string, startPosition *navigati
 		return nil, nil, err
 	}
 
-	if result.Wrong() {
-		return nil, nil, fmt.Errorf(
-			"no ending wrapper '%s' for starting '%s' all, (started %d time(s), ended %d time(s)",
-			wrapper.Start,
-			wrapper.End,
-			start.Count,
-			end.Count,
-		)
-	}
-
-	return result, tokens_, nil
+	return nil, nil, fmt.Errorf(
+		"no ending wrapper '%s' for starting '%s' all, (started %d time(s), ended %d time(s)",
+		wrapper.Start,
+		wrapper.End,
+		startMatcher.Count,
+		endMatcher.Count,
+	)
 }
 
 func (p *parser) parseLine(line string, depth int, start *runes.Matcher, end *runes.Matcher, tokens *tokens.Tokens) (int, int, bool) {

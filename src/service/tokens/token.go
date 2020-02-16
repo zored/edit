@@ -1,10 +1,14 @@
 package tokens
 
 type Token struct {
-	value     string
-	tokenType TokenType
+	Value     string
+	TokenType TokenType
 }
 
 func NewToken(runes []rune, tokenType TokenType) *Token {
-	return &Token{value: string(runes), tokenType: tokenType}
+	return &Token{Value: string(runes), TokenType: tokenType}
+}
+
+func NewStringToken(runes string, tokenType TokenType) *Token {
+	return &Token{Value: runes, TokenType: tokenType}
 }
