@@ -1,7 +1,4 @@
 package reformat
 
-type (
-	TreeFormatter struct {
-
-	}
-)
+type TreeFormatter struct {
+}
