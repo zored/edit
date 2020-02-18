@@ -1,4 +1,4 @@
-package formatter
+package formatters
 
 import (
 	"github.com/magiconair/properties/assert"
@@ -17,15 +17,13 @@ func TestFormatter_Format(t *testing.T) {
 		tokens.NewStringToken("}", tokens.AtomWrapEnd),
 		tokens.NewStringToken("}", tokens.AtomWrapEnd),
 	}
-	code := NewFormatter().Format(tokens_, in_line, 0)
+	code := NewFormatter().Format(tokens_, InLine, 0, "")
 	assert.Equal(t, code, `{"a":"b","c":{"d":"e"}}`)
-	/*
-	code = NewFormatter().Format(tokens_, in_column, 2)
+	code = NewFormatter().Format(tokens_, InColumn, 2, "")
 	assert.Equal(t, code, `{
   "a":"b",
   "c":{
     "d":"e"
   }
 }`)
-	 */
 }

@@ -1,4 +1,4 @@
-package parser
+package parsers
 
 import (
 	"bufio"
@@ -10,16 +10,16 @@ import (
 	"io"
 )
 
-const (
-	badIndex  = -1
-	badColumn = 0
-)
+const badIndex  = -1
 
 type (
-	parser struct{}
+	parser  struct{}
+	IParser interface {
+		Parse(reader io.Reader, cursor *navigation.Position, wrapper *tokens.AtomWrapper, separator_ tokens.Separator) (interval_ *navigation.Interval, tokens_ *tokens.Tokens, err error)
+	}
 )
 
-func NewParser() *parser {
+func NewParser() IParser {
 	return &parser{}
 }
 

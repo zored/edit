@@ -5,6 +5,8 @@ import (
 	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/zored/edit/src/service/files"
+	"github.com/zored/edit/src/service/navigation"
 	"os"
 )
 
@@ -22,7 +24,13 @@ For example, you can turn line of parameters into column.
 Or you can make one-line objects if they are small enough.
 `,
 		Run: func(cmd *cobra.Command, args []string) {
-
+			config := files.NewFileFormatConfig(
+				*file,
+				navigation.NewPosition(*line, *column), // TODO: fix that position is +1.
+			)
+			if err := files.NewFileFormatter().Format(config); err != nil {
+				panic(err)
+			}
 		},
 	}
 )
