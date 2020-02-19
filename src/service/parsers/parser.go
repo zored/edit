@@ -39,6 +39,7 @@ func (p *parser) Parse(reader io.Reader, cursor *navigation.Position, wrapper *t
 	interval_.Stop, tokens_, err = p.getWrapperEnd(linesTillCursor, interval_.Start, wrapper, separator_, file)
 	return
 }
+
 func (p *parser) getWrapperStart(linesTillCursor []string, cursor *navigation.Position, needle string) (*navigation.Position, error) {
 	initialLineNumber := len(linesTillCursor)
 	result := navigation.NewPosition(initialLineNumber, badIndex)
@@ -133,7 +134,7 @@ func (p *parser) getLinesTillCursor(cursor *navigation.Position, linesScanner *b
 	lines := make([]string, 0)
 
 	// Get all lines start cursor line:
-	line := 0
+	line := 1
 	for ; line <= cursor.Line && linesScanner.Scan(); line++ {
 		lines = append(lines, linesScanner.Text())
 	}

@@ -26,7 +26,7 @@ Or you can make one-line objects if they are small enough.
 		Run: func(cmd *cobra.Command, args []string) {
 			config := files.NewFileFormatConfig(
 				*file,
-				navigation.NewPosition(*line, *column), // TODO: fix that position is +1.
+				navigation.NewPosition(*line, *column),
 			)
 			if err := files.NewFileFormatter().Format(config); err != nil {
 				panic(err)
