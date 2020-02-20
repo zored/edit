@@ -1,4 +1,4 @@
-package scan
+package scanners
 
 type linesScanner struct {
 	lines   []string
@@ -6,7 +6,15 @@ type linesScanner struct {
 	reverse bool
 }
 
-func NewLinesScanner(lines []string, reverse bool) *linesScanner {
+func NewLinesScanner(lines []string) *linesScanner {
+	return newLinesScanner(lines, false)
+}
+
+func NewReverseLinesScanner(lines []string) *linesScanner {
+	return newLinesScanner(lines, true)
+}
+
+func newLinesScanner(lines []string, reverse bool) *linesScanner {
 	index := 0
 	if reverse {
 		index = len(lines) - 1

@@ -2,26 +2,22 @@ package runes
 
 type Matcher struct {
 	Runes   []rune
+	matches int
 	index   int
-	Count   int
 	reverse bool
 }
 
-func NewRunesMatcher(runes string, reverse bool) *Matcher {
+func NewMatcher(runes string, reverse bool) *Matcher {
 	matcher := &Matcher{
 		Runes:   []rune(runes),
-		Count:   0,
+		matches: 0,
 		reverse: reverse,
 	}
 	matcher.reset()
 	return matcher
 }
 
-func (m *Matcher) Closed(depth int) bool {
-	return depth == 0 && m.Count > 0
-}
-
-func (m *Matcher) Check(r rune) bool {
+func (m *Matcher) Add(r rune) bool {
 	if m.currentRune() != r {
 		m.reset()
 		return false
@@ -30,9 +26,13 @@ func (m *Matcher) Check(r rune) bool {
 	if !m.found() {
 		return false
 	}
-	m.Count++
+	m.matches++
 	m.reset()
 	return true
+}
+
+func (m *Matcher) Matches() int {
+	return m.matches
 }
 
 func (m *Matcher) currentRune() rune {

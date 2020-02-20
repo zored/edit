@@ -5,18 +5,14 @@ import (
 	"strings"
 )
 
-type (
-	formatter  struct{}
-	IFormatter interface {
-		Format(tokens_ []*tokens.Token, formatRule FormatRule, ident int, separator tokens.Separator) string
-	}
-)
+type formatter struct{}
 
 func NewFormatter() IFormatter {
 	return &formatter{}
 }
 
-func (f *formatter) Format(tokens_ []*tokens.Token, formatRule FormatRule, ident int, separator tokens.Separator) string {
+// TODO: refactor
+func (f *formatter) Format(tokens_ tokens.Tokens, options *Options) string {
 	result := ""
 	depth := 0
 	atomNameBefore := false
@@ -24,26 +20,26 @@ func (f *formatter) Format(tokens_ []*tokens.Token, formatRule FormatRule, ident
 
 	first := true
 	for _, token := range tokens_ {
-		switch formatRule {
+		switch options.Rule {
 		case InColumn:
 			tokenType := token.TokenType
-			if tokenType == tokens.AtomWrapEnd {
+			if tokenType == tokens.WrapperEnd {
 				depth--
 			}
 
 			addNewLine := !first && !atomNameBefore && tokenType != tokens.AtomSeparator
 			if addNewLine {
-				if tokenType == tokens.AtomWrapEnd && !atomSeparatorBefore {
-					result += string(separator)
+				if tokenType == tokens.WrapperEnd && !atomSeparatorBefore {
+					result += string(options.TrailingSeparator)
 				}
-				result += "\n" + strings.Repeat(" ", depth*ident)
+				result += "\n" + strings.Repeat(" ", depth*options.Indent)
 			}
 
-			if tokenType == tokens.AtomWrapStart {
+			if tokenType == tokens.WrapperStart {
 				depth++
 			}
 
-			atomNameBefore = tokenType == tokens.AtomName
+			atomNameBefore = tokenType == tokens.Name
 			atomSeparatorBefore = tokenType == tokens.AtomSeparator
 			first = false
 		}

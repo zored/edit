@@ -8,22 +8,33 @@ import (
 
 func TestFormatter_Format(t *testing.T) {
 	tokens_ := []*tokens.Token{
-		tokens.NewStringToken("{", tokens.AtomWrapStart),
+		tokens.NewStringToken("{", tokens.WrapperStart),
 		tokens.NewStringToken(`"a":"b"`, tokens.Atom),
 		tokens.NewStringToken(`,`, tokens.AtomSeparator),
-		tokens.NewStringToken(`"c":`, tokens.AtomName),
-		tokens.NewStringToken("{", tokens.AtomWrapStart),
+		tokens.NewStringToken(`"c":`, tokens.Name),
+		tokens.NewStringToken("{", tokens.WrapperStart),
 		tokens.NewStringToken(`"d":"e"`, tokens.Atom),
-		tokens.NewStringToken("}", tokens.AtomWrapEnd),
-		tokens.NewStringToken("}", tokens.AtomWrapEnd),
+		tokens.NewStringToken("}", tokens.WrapperEnd),
+		tokens.NewStringToken("}", tokens.WrapperEnd),
 	}
-	code := NewFormatter().Format(tokens_, InLine, 0, "")
-	assert.Equal(t, code, `{"a":"b","c":{"d":"e"}}`)
-	code = NewFormatter().Format(tokens_, InColumn, 2, "")
-	assert.Equal(t, code, `{
+	options := &Options{Indent: 2, TrailingSeparator: "", Rule: InLine}
+	formatter := NewFormatter()
+
+	assert.Equal(t, formatter.Format(tokens_, options), `{"a":"b","c":{"d":"e"}}`)
+
+	options.Rule = InColumn
+	assert.Equal(t, formatter.Format(tokens_, options), `{
   "a":"b",
   "c":{
     "d":"e"
   }
+}`)
+
+	options.TrailingSeparator = ","
+	assert.Equal(t, formatter.Format(tokens_, options), `{
+  "a":"b",
+  "c":{
+    "d":"e",
+  },
 }`)
 }

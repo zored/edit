@@ -1,4 +1,4 @@
-package scan
+package scanners
 
 type multiScanner struct {
 	scanners []IScanner
@@ -15,6 +15,7 @@ func (m *multiScanner) Scan() bool {
 			return true
 		}
 	}
+	m.index--
 	return false
 }
 

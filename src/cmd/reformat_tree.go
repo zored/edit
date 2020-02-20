@@ -5,14 +5,14 @@ import (
 	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/zored/edit/src/service/files"
 	"github.com/zored/edit/src/service/navigation"
+	"github.com/zored/edit/src/service/saver"
 	"os"
 )
 
 var (
-	file         *string
 	line, column *int
+	file         *string
 	cfgFile      string
 	rootCmd      = &cobra.Command{
 		Use:   "reformat-tree",
@@ -24,35 +24,36 @@ For example, you can turn line of parameters into column.
 Or you can make one-line objects if they are small enough.
 `,
 		Run: func(cmd *cobra.Command, args []string) {
-			config := files.NewFileFormatConfig(
+			options := saver.NewFileOptions(
 				*file,
 				navigation.NewPosition(*line, *column),
 			)
-			if err := files.NewFileFormatter().Format(config); err != nil {
-				panic(err)
-			}
+			err := saver.NewFileSaver().Save(options)
+			handleError(err)
 		},
 	}
 )
 
 func Execute() {
-	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
+	err := rootCmd.Execute()
+	handleError(err)
+}
+
+func handleError(err error) {
+	if err != nil {
+		fmt.Printf("command execution error: %s", err)
 		os.Exit(1)
 	}
 }
 
 func init() {
 	cobra.OnInitialize(initConfig)
-	// Global flag:
-	//rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.edit.yaml)")
-
-	// Local flag:
 	file = rootCmd.Flags().StringP("file", "f", "", "file with tree structure")
 	line = rootCmd.Flags().IntP("line", "l", 0, "file line where tree structure is")
 	column = rootCmd.Flags().IntP("column", "c", 0, "file column on line where tree structure is")
 }
 
+// TODO: clean-up file:
 func initConfig() {
 	if cfgFile != "" {
 		viper.SetConfigFile(cfgFile)
@@ -68,6 +69,6 @@ func initConfig() {
 
 	viper.AutomaticEnv()
 	if err := viper.ReadInConfig(); err == nil {
-		fmt.Println("Using config file:", viper.ConfigFileUsed())
+		fmt.Println("Using options file:", viper.ConfigFileUsed())
 	}
 }

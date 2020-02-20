@@ -1,4 +1,4 @@
-package scan
+package scanners
 
 type IScanner interface {
 	Scan() bool

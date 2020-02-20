@@ -1,9 +1,20 @@
 package tokens
 
-type Token struct {
-	Value     string
-	TokenType TokenType
-}
+type (
+	Token struct {
+		Value     string
+		TokenType TokenType
+	}
+	TokenType int
+)
+
+const (
+	WrapperStart TokenType = iota
+	WrapperEnd
+	AtomSeparator
+	Atom
+	Name
+)
 
 func NewToken(runes []rune, tokenType TokenType) *Token {
 	return &Token{Value: string(runes), TokenType: tokenType}

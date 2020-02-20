@@ -3,45 +3,36 @@ package replacers
 import (
 	"bufio"
 	"github.com/zored/edit/src/service/navigation"
+	"github.com/zored/edit/src/service/scanners"
 	"io"
 )
 
-type (
-	replacer  struct{}
-	IReplacer interface {
-		Replace(input io.Reader, interval *navigation.Interval, replacement string) (string, error)
-	}
-)
+type replacer struct{}
 
 func NewReplacer() IReplacer {
 	return &replacer{}
 }
 
 func (r *replacer) Replace(input io.Reader, interval *navigation.Interval, replacement string) (string, error) {
-	lines := bufio.NewScanner(input)
-	// TODO: use more efficient way:
-	position := navigation.NewPosition(1, 1)
-	start, stop := interval.Start, interval.Stop
+	position := navigation.NewStartPosition()
 	result := ""
-	for lines.Scan() {
-		lineText := lines.Text()
+	err := scanners.ScanAll(bufio.NewScanner(input), func(lineText string) error {
+		defer func() { position.Line++ }()
 
-		if position.Line < start.Line || position.Line > stop.Line {
+		if position.Line < interval.Start.Line || position.Line > interval.Stop.Line {
 			result += lineText + "\n"
-		} else {
-			if position.Line == start.Line {
-				result += lineText[:start.Column-1] + replacement
-			}
-			if position.Line == stop.Line {
-				result += lineText[stop.Column-1:] + "\n"
-			}
+			return nil
 		}
-		position.Line++
-	}
 
-	if err := lines.Err(); err != nil {
-		return "", err
-	}
+		if position.Line == interval.Start.Line {
+			result += lineText[:interval.Start.Column-1] + replacement
+		}
 
-	return result, nil
+		if position.Line == interval.Stop.Line {
+			result += lineText[interval.Stop.Column-1:] + "\n"
+		}
+
+		return nil
+	})
+	return result, err
 }
