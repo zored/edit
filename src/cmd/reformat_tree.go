@@ -7,14 +7,16 @@ import (
 	"github.com/spf13/viper"
 	"github.com/zored/edit/src/service/navigation"
 	"github.com/zored/edit/src/service/saver"
+	"github.com/zored/edit/src/service/tokens"
 	"os"
 )
 
+// TODO: refactor this stuff
 var (
-	line, column *int
-	file         *string
-	cfgFile      string
-	rootCmd      = &cobra.Command{
+	line, column                   *int
+	file, wrapperStart, wrapperEnd *string
+	cfgFile                        string
+	rootCmd                        = &cobra.Command{
 		Use:   "reformat-tree",
 		Short: "Reformat tree structure",
 		Long: `Reformat tree structure on some position of file.
@@ -27,6 +29,10 @@ Or you can make one-line objects if they are small enough.
 			options := saver.NewFileOptions(
 				*file,
 				navigation.NewPosition(*line, *column),
+				tokens.NewWrappers(
+					*wrapperStart,
+					*wrapperEnd,
+				),
 			)
 			err := saver.NewFileSaver().Save(options)
 			handleError(err)
@@ -51,6 +57,10 @@ func init() {
 	file = rootCmd.Flags().StringP("file", "f", "", "file with tree structure")
 	line = rootCmd.Flags().IntP("line", "l", 0, "file line where tree structure is")
 	column = rootCmd.Flags().IntP("column", "c", 0, "file column on line where tree structure is")
+
+	// TODO: description:
+	wrapperStart = rootCmd.Flags().StringP("wrapper-start", "a", "(", "")
+	wrapperEnd = rootCmd.Flags().StringP("wrapper-end", "b", ")", "")
 }
 
 // TODO: clean-up file:

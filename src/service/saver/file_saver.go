@@ -51,7 +51,7 @@ func (f *fileSaver) replaceText(path string, interval *navigation.Interval, form
 
 func (f *fileSaver) getMolecule(path string, config *FileOptions) (mol *tokens.Molecule, err error) {
 	err = f.withFile(path, func(file io.Reader) (err error) {
-		mol, err = f.tokenizer.Tokenize(file, config.cursor, config.wrapper, config.separator)
+		mol, err = f.tokenizer.Tokenize(file, config.cursor, config.wrappers, config.separator)
 		return
 	})
 	return

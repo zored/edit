@@ -10,7 +10,7 @@ type FileOptions struct {
 	file string
 
 	cursor                  *navigation.Position
-	wrapper                 *tokens.Wrappers
+	wrappers                *tokens.Wrappers
 	separator               tokens.Separator
 	formatRule              formatters.Rule
 	toggleTrailingSeparator bool
@@ -33,10 +33,11 @@ func (c FileOptions) GetFormatterOptions() *formatters.Options {
 func NewFileOptions(
 	file string,
 	cursor *navigation.Position,
+	wrappers *tokens.Wrappers,
 ) *FileOptions {
 	return &FileOptions{
 		cursor:                  cursor,
-		wrapper:                 tokens.NewWrappers("(", ")"),
+		wrappers:                wrappers,
 		separator:               ",",
 		formatRule:              formatters.InColumn,
 		file:                    file,
