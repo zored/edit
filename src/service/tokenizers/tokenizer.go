@@ -72,6 +72,7 @@ func (p *tokenizer) getWrapperStart(linesTillCursor []string, cursor *navigation
 				return scanners.BreakErr
 			}
 
+			result.Line--
 			return nil
 		},
 	)
@@ -91,8 +92,15 @@ func (p *tokenizer) getWrapperStart(linesTillCursor []string, cursor *navigation
 	)
 }
 
-func (p *tokenizer) getWrapperEnd(linesTillCursor []string, startPosition *navigation.Position, wrapper *tokens.Wrappers, separator_ tokens.Separator, fileScanner *bufio.Scanner) (*navigation.Position, tokens.Tokens, error) {
+func (p *tokenizer) getWrapperEnd(
+    linesTillCursor []string,
+    startPosition *navigation.Position,
+    wrapper *tokens.Wrappers,
+    separator_ tokens.Separator,
+    fileScanner *bufio.Scanner,
+) (*navigation.Position, tokens.Tokens, error) {
 	result := navigation.NewPosition(startPosition.Line, startPosition.Column)
+	resultTokensBuffer := tokens.NewTokenBuffer(wrapper, separator_)
 
 	lines := linesTillCursor[startPosition.LineIndex():]
 	lines[0] = lines[0][startPosition.ColumnIndex():]
@@ -102,8 +110,6 @@ func (p *tokenizer) getWrapperEnd(linesTillCursor []string, startPosition *navig
 	depth := 0
 	done := false
 
-	buffer := tokens.NewTokenBuffer(wrapper, separator_)
-
 	err := scanners.ScanAll(
 		scanners.NewMultiScanner(
 			scanners.NewLinesScanner(lines),
@@ -111,9 +117,12 @@ func (p *tokenizer) getWrapperEnd(linesTillCursor []string, startPosition *navig
 		),
 		func(line string) error {
 			var runeIndex int
-			depth, runeIndex, done = p.parseLine(line, depth, startMatcher, endMatcher, buffer)
+			depth, runeIndex, done = p.parseLine(line, depth, startMatcher, endMatcher, resultTokensBuffer)
 			if done {
-				result.Column = runeIndex + startPosition.Column + 1
+				result.Column = runeIndex + 2
+				if startPosition.Line == result.Line {
+					result.Column += startPosition.Column - 1
+				}
 				return scanners.BreakErr
 			}
 			result.Line++
@@ -126,7 +135,7 @@ func (p *tokenizer) getWrapperEnd(linesTillCursor []string, startPosition *navig
 	}
 
 	if done {
-		return result, buffer.Complete(), nil
+		return result, resultTokensBuffer.Complete(), nil
 	}
 
 	return nil, nil, fmt.Errorf(
@@ -138,7 +147,7 @@ func (p *tokenizer) getWrapperEnd(linesTillCursor []string, startPosition *navig
 	)
 }
 
-func (p *tokenizer) parseLine(line string, depth int, start *runes.Matcher, end *runes.Matcher, tokens *tokens.TokenBuffer) (int, int, bool) {
+func (p *tokenizer) parseLine(line string, depth int, start *runes.Matcher, end *runes.Matcher, tokensBuffer *tokens.TokenBuffer) (int, int, bool) {
 	lineRunes := []rune(line)
 	for runeIndex, rune_ := range lineRunes {
 		if start.Add(rune_) {
@@ -147,7 +156,7 @@ func (p *tokenizer) parseLine(line string, depth int, start *runes.Matcher, end 
 		if end.Add(rune_) {
 			depth--
 		}
-		tokens.Write(rune_)
+		tokensBuffer.Write(rune_)
 		if depth == 0 && start.Matches() > 0 {
 			return 0, runeIndex, true
 		}
@@ -161,11 +170,11 @@ func (p *tokenizer) getLinesTillCursor(cursor *navigation.Position, file *bufio.
 	// Get all lines start cursor lineNumber:
 	lineNumber := 1
 	err := scanners.ScanAll(file, func(line string) error {
+		lineNumber++
+		lines = append(lines, line)
 		if lineNumber > cursor.Line {
 			return scanners.BreakErr
 		}
-		lineNumber++
-		lines = append(lines, line)
 		return nil
 	})
 	if err != nil {

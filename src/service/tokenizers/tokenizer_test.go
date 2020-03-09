@@ -19,6 +19,7 @@ type tokenizeTestData struct {
 }
 
 func TestTokenizer_Parse(t *testing.T) {
+	tokenizer := NewTokenizer()
 	index := 0
 	for _, data := range []tokenizeTestData{
 		{
@@ -46,21 +47,25 @@ func TestTokenizer_Parse(t *testing.T) {
 		},
 		{
 			name:        "method",
-			position:    navigation.NewPosition(2, 49),
+			position:    navigation.NewPosition(3, 22),
 			atomWrapper: tokens.NewWrappers("(", ")"),
 			input: `
-func (p *tokenizer) getLinesTillCursor(cursor *navigation.Position, linesScanner *bufio.Scanner) ([]string, error) {
+func (p *tokenizer) getLinesTillCursor(
+  cursor *navigation.Position,
+  linesScanner *bufio.Scanner,
+) ([]string, error) {
 `,
 			expectedMolecule: tokens.NewMolecule(
 				navigation.NewInterval(
 					navigation.NewPosition(2, 39),
-					navigation.NewPosition(2, 97),
+					navigation.NewPosition(5, 2),
 				),
 				tokens.Tokens{
 					tokens.NewStringToken("(", tokens.WrapperStart),
 					tokens.NewStringToken(`cursor *navigation.Position`, tokens.Atom),
 					tokens.NewStringToken(`,`, tokens.AtomSeparator),
 					tokens.NewStringToken(`linesScanner *bufio.Scanner`, tokens.Atom),
+					tokens.NewStringToken(`,`, tokens.AtomSeparator),
 					tokens.NewStringToken(")", tokens.WrapperEnd),
 				},
 			),
@@ -68,7 +73,7 @@ func (p *tokenizer) getLinesTillCursor(cursor *navigation.Position, linesScanner
 		},
 	} {
 		t.Run(fmt.Sprintf("test %s", data.name), func(t *testing.T) {
-			mol, err := NewTokenizer().Tokenize(
+			mol, err := tokenizer.Tokenize(
 				strings.NewReader(data.input),
 				data.position,
 				data.atomWrapper,

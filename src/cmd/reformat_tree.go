@@ -15,6 +15,7 @@ import (
 // TODO: refactor this stuff
 var (
 	line, column                         *int
+	trailingSeparator                    *bool
 	file, wrapperStart, wrapperEnd, rule *string
 	cfgFile                              string
 	rootCmd                              = &cobra.Command{
@@ -35,6 +36,7 @@ Or you can make one-line objects if they are small enough.
 					*wrapperEnd,
 				),
 				formatters.Rule(*rule),
+				*trailingSeparator,
 			)
 			err := saver.NewFileSaver().Save(options)
 			handleError(err)
@@ -61,6 +63,8 @@ func init() {
 
 	line = rootCmd.Flags().IntP("line", "l", 0, "file line where tree structure is")
 	column = rootCmd.Flags().IntP("column", "c", 0, "file column on line where tree structure is")
+
+	trailingSeparator = rootCmd.Flags().BoolP("trail", "t", false, "add trailing separator")
 
 	// TODO: description:
 	wrapperStart = rootCmd.Flags().StringP("wrapper-start", "a", "(", "")
