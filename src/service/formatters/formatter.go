@@ -2,6 +2,7 @@ package formatters
 
 import (
 	"github.com/zored/edit/src/service/tokens"
+	"math"
 	"strings"
 )
 
@@ -11,40 +12,55 @@ func NewFormatter() IFormatter {
 	return &formatter{}
 }
 
-// TODO: refactor
 func (f *formatter) Format(tokens_ tokens.Tokens, options *Options) string {
 	result := ""
-	depth := 0
-	atomNameBefore := false
-	atomSeparatorBefore := false
+	depthNow := 0
+	depthNext := 0
+	var typeBefore tokens.TokenType
+
+	treeDepth := math.MaxInt32
+	switch options.Rule {
+	case Line:
+		treeDepth = 0
+	case Column:
+		treeDepth = 2
+	}
 
 	first := true
 	for _, token := range tokens_ {
-		switch options.Rule {
-		case InColumn:
-			tokenType := token.TokenType
-			if tokenType == tokens.WrapperEnd {
-				depth--
-			}
+		typeNow := token.TokenType
 
-			addNewLine := !first && !atomNameBefore && tokenType != tokens.AtomSeparator
-			if addNewLine {
-				if tokenType == tokens.WrapperEnd && !atomSeparatorBefore {
-					result += string(options.TrailingSeparator)
-				}
-				result += "\n" + strings.Repeat(" ", depth*options.Indent)
-			}
-
-			if tokenType == tokens.WrapperStart {
-				depth++
-			}
-
-			atomNameBefore = tokenType == tokens.Name
-			atomSeparatorBefore = tokenType == tokens.AtomSeparator
-			first = false
+		switch typeNow {
+		case tokens.WrapperEnd:
+			depthNext--
+		case tokens.WrapperStart:
+			depthNext++
 		}
+
+		sameLine := first ||
+			typeBefore == tokens.AtomName ||
+			typeNow == tokens.AtomSeparator ||
+			(typeBefore == tokens.WrapperStart && typeNow == tokens.WrapperEnd) ||
+			(depthNow >= treeDepth)
+		if !sameLine {
+			result += nextLine(typeNow, typeBefore, options, depthNext)
+		}
+
+		first = false
+		typeBefore = typeNow
+		depthNow = depthNext
 		result += token.Value
 	}
 
 	return result
+}
+
+func nextLine(typeNow, typeBefore tokens.TokenType, options *Options, depthNext int) string {
+	// Separator:
+	separator := ""
+	if typeNow == tokens.WrapperEnd && typeBefore != tokens.AtomSeparator {
+		separator = string(options.TrailingSeparator)
+	}
+
+	return separator + "\n" + strings.Repeat(" ", depthNext*options.Indent)
 }

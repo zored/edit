@@ -35,7 +35,7 @@ func newTokenBuffer(wrapper *Wrappers, separator Separator, reverse bool) *Token
 func (t *TokenBuffer) Write(rune_ rune) {
 	var token_ *Token = nil
 	if t.wrapperStart.Add(rune_) {
-		t.appendBufferToken(Name)
+		t.appendBufferToken(AtomName)
 		token_ = NewToken(t.wrapperStart.Runes, WrapperStart)
 	}
 	if t.wrapperEnd.Add(rune_) {

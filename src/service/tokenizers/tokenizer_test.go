@@ -35,7 +35,7 @@ func TestTokenizer_Parse(t *testing.T) {
 					tokens.NewStringToken("{", tokens.WrapperStart),
 					tokens.NewStringToken(`"a":"b"`, tokens.Atom),
 					tokens.NewStringToken(`,`, tokens.AtomSeparator),
-					tokens.NewStringToken(`"c":`, tokens.Name),
+					tokens.NewStringToken(`"c":`, tokens.AtomName),
 					tokens.NewStringToken("{", tokens.WrapperStart),
 					tokens.NewStringToken(`"d":"e"`, tokens.Atom),
 					tokens.NewStringToken("}", tokens.WrapperEnd),

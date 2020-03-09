@@ -3,6 +3,7 @@ package formatters
 type Rule string
 
 const (
-	InColumn Rule = "column"
-	InLine   Rule = "line"
+	Tree   Rule = "tree"
+	Column Rule = "column"
+	Line   Rule = "line"
 )

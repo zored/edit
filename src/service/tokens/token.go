@@ -13,7 +13,7 @@ const (
 	WrapperEnd
 	AtomSeparator
 	Atom
-	Name
+	AtomName
 )
 
 func NewToken(runes []rune, tokenType TokenType) *Token {

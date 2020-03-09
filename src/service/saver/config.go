@@ -30,16 +30,12 @@ func (c FileOptions) GetFormatterOptions() *formatters.Options {
 	}
 }
 
-func NewFileOptions(
-	file string,
-	cursor *navigation.Position,
-	wrappers *tokens.Wrappers,
-) *FileOptions {
+func NewFileOptions(file string, cursor *navigation.Position, wrappers *tokens.Wrappers, formatRule formatters.Rule, ) *FileOptions {
 	return &FileOptions{
 		cursor:                  cursor,
 		wrappers:                wrappers,
 		separator:               ",",
-		formatRule:              formatters.InColumn,
+		formatRule:              formatRule,
 		file:                    file,
 		indent:                  4,
 		toggleTrailingSeparator: true,
