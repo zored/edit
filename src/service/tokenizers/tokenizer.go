@@ -93,11 +93,11 @@ func (p *tokenizer) getWrapperStart(linesTillCursor []string, cursor *navigation
 }
 
 func (p *tokenizer) getWrapperEnd(
-    linesTillCursor []string,
-    startPosition *navigation.Position,
-    wrapper *tokens.Wrappers,
-    separator_ tokens.Separator,
-    fileScanner *bufio.Scanner,
+	linesTillCursor []string,
+	startPosition *navigation.Position,
+	wrapper *tokens.Wrappers,
+	separator_ tokens.Separator,
+	fileScanner *bufio.Scanner,
 ) (*navigation.Position, tokens.Tokens, error) {
 	result := navigation.NewPosition(startPosition.Line, startPosition.Column)
 	resultTokensBuffer := tokens.NewTokenBuffer(wrapper, separator_)
